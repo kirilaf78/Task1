@@ -1,4 +1,6 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, BrowserContext } from '@playwright/test';
+import { ArticlePage } from './pages/articlePage';
+import { HelpPage } from './pages/helpPage';
 
 test.describe('Wikipedia Scenarios', () => {
   let searchQuery: string;
@@ -29,12 +31,13 @@ test.describe('Wikipedia Scenarios', () => {
     await page.locator('#searchform button').click();
     await page.waitForLoadState('networkidle');
 
+    const articlePage = new ArticlePage(page);
     // Verify header is expected and take a screenshot
-    await expect(page.locator('#firstHeading')).toBeVisible();
+    await articlePage.verifyHeaderIsVisible();
     await page.screenshot({ path: `screenshot-${test.info().project.name}-search-result.png` });
 
     // 3. Click 'Edit'
-    await page.getByRole('link', { name: 'Edit', exact: true }).click();
+    await articlePage.clickEdit();
 
     // 4. Verify Modal is shown
     await expect(page.getByText('Welcome to WikipediaAnyone')).toBeVisible();
@@ -46,35 +49,26 @@ test.describe('Wikipedia Scenarios', () => {
     await expect(page.getByText('Welcome to WikipediaAnyone')).toBeHidden();
 
     // 7. Click 'View history', click 'Help'
-    await page.getByRole('link', { name: 'View history' }).click();
+    await articlePage.clickViewHistory();
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.locator('#mw-indicator-mw-helplink').getByRole('link', { name: 'Help' }).click(),
+      articlePage.page.locator('#mw-indicator-mw-helplink').getByRole('link', { name: 'Help' }).click(),
     ]);
     await newPage.waitForLoadState('networkidle');
 
+    const helpPage = new HelpPage(newPage);
     // Verify Help page opens in a new tab and its URL is expected
-    await expect(newPage).toHaveURL(/.*Help:History/);
+    await helpPage.verifyHelpPageUrl();
     await newPage.close(); // Close the help page
 
     // 8. Go back to 'Read' section of 'Playwright' page (don't use menu link)
-    await page.getByRole('link', { name: 'Read' }).click();
-    await page.waitForLoadState('networkidle');
+    await articlePage.clickRead();
 
     // Open language list, search and select target language
-    await page.locator('#p-lang-btn').click(); // Language button
-    const languageSearchInput = page.getByRole('textbox', { name: 'Search for a language' });
-    if (targetLanguage === 'be') {
-      await languageSearchInput.fill('Бе');
-      await page.getByRole('link', { name: 'Беларуская', exact: true }).click();
-    } else if (targetLanguage === 'ja') {
-      await languageSearchInput.fill('ja');
-      await page.getByRole('link', { name: '日本語', exact: true }).click();
-    }
-    await page.waitForLoadState('networkidle');
+    await articlePage.selectLanguage(targetLanguage);
 
     // Verify Appropriate article opens, take a screenshot
-    await expect(page.locator('#firstHeading')).toBeVisible();
+    await articlePage.verifyHeaderIsVisible();
     await page.screenshot({ path: `screenshot-${test.info().project.name}-language-change.png` });
   });
 });
