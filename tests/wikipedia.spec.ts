@@ -1,6 +1,6 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test';
-import { ArticlePage } from './pages/articlePage';
-import { HelpPage } from './pages/helpPage';
+import { ArticlePage } from '../pages/articlePage';
+import { HelpPage } from '../pages/helpPage';
 
 test.describe('Wikipedia Scenarios', () => {
   let searchQuery: string;
@@ -34,7 +34,7 @@ test.describe('Wikipedia Scenarios', () => {
     const articlePage = new ArticlePage(page);
     // Verify header is expected and take a screenshot
     await articlePage.verifyHeaderIsVisible();
-    await page.screenshot({ path: `screenshot-${test.info().project.name}-search-result.png` });
+    await page.screenshot({ path: `screenshots/screenshot-${test.info().project.name}-search-result.png` });
 
     // 3. Click 'Edit'
     await articlePage.clickEdit();
@@ -69,7 +69,7 @@ test.describe('Wikipedia Scenarios', () => {
 
     // Verify Appropriate article opens, take a screenshot
     await articlePage.verifyHeaderIsVisible();
-    await page.screenshot({ path: `screenshot-${test.info().project.name}-language-change.png` });
+    await page.screenshot({ path: `screenshots/screenshot-${test.info().project.name}-language-change.png` });
   });
 });
 
