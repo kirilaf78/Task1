@@ -12,11 +12,11 @@ export class ArticlePage {
   constructor(page: Page) {
     this.page = page;
     this.firstHeading = page.locator('#firstHeading');
-    this.editLink = page.getByRole('link', { name: 'Edit', exact: true });
-    this.viewHistoryLink = page.getByRole('link', { name: 'View history' });
-    this.readLink = page.getByRole('link', { name: 'Read' });
+    this.editLink = page.locator('#ca-edit a');
+    this.viewHistoryLink = page.locator('#ca-history a');
+    this.readLink = page.locator('#ca-view a');
     this.languageButton = page.locator('#p-lang-btn');
-    this.languageSearchInput = page.getByRole('textbox', { name: 'Search for a language' });
+    this.languageSearchInput= page.locator('input.uls-languagefilter')
   }
 
   async verifyHeaderIsVisible() {
@@ -37,13 +37,10 @@ export class ArticlePage {
 
   async selectLanguage(targetLanguage: string) {
     await this.languageButton.click();
-    if (targetLanguage === 'be') {
-      await this.languageSearchInput.fill('Бе');
-      await this.page.getByRole('link', { name: 'Беларуская', exact: true }).click();
-    } else if (targetLanguage === 'ja') {
-      await this.languageSearchInput.fill('ja');
-      await this.page.getByRole('link', { name: '日本語', exact: true }).click();
-    }
+    await this.languageSearchInput.fill(targetLanguage)
+    const languageLink = this.page.getByRole('link', { name: targetLanguage, exact: true });
+    await languageLink.waitFor({ state: 'visible' });
+    await languageLink.click();
     await this.page.waitForLoadState('networkidle');
   }
 }

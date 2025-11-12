@@ -11,11 +11,11 @@ test.describe('Wikipedia Scenarios', () => {
     // Determine environment and set variables
     if (testInfo.project.name === 'PROD-chromium') {
       searchQuery = 'Драматург';
-      targetLanguage = 'ja'; // Japanese
+      targetLanguage = '日本語'; // Japanese 日本語
       baseUrl = 'https://be.wikipedia.org'; // Base URL for PROD (Belarussian Wikipedia)
     } else { // QA environment
       searchQuery = 'Playwright';
-      targetLanguage = 'be'; // Belarussian
+      targetLanguage = 'Беларуская'; // Belarussian
       baseUrl = 'https://en.wikipedia.org'; // Base URL for QA (English Wikipedia)
     }
 
@@ -40,19 +40,18 @@ test.describe('Wikipedia Scenarios', () => {
     await articlePage.clickEdit();
 
     // 4. Verify Modal is shown
-    await expect(page.getByText('Welcome to WikipediaAnyone')).toBeVisible();
-
+    await expect(page.locator("//label[@id='ooui-7']")).toBeVisible()
     // 5. Click 'Start editing'
-    await page.getByRole('button', { name: 'Start editing' }).click();
+    await page.locator('.oo-ui-actionWidget.oo-ui-flaggedElement-primary').getByRole('button').click();
 
     // 6. Verify Modal is hidden
-    await expect(page.getByText('Welcome to WikipediaAnyone')).toBeHidden();
+    await expect(page.locator("//label[@id='ooui-7']")).toBeHidden();
 
     // 7. Click 'View history', click 'Help'
     await articlePage.clickViewHistory();
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
-      articlePage.page.locator('#mw-indicator-mw-helplink').getByRole('link', { name: 'Help' }).click(),
+      articlePage.page.locator('#mw-indicator-mw-helplink a').click(),
     ]);
     await newPage.waitForLoadState('networkidle');
 
